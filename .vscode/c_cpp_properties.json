@@ -9,7 +9,7 @@
                 "C:\\\\arduino\\\\arduino-1.8.9\\\\hardware\\\\tools\\\\avr\\\\lib\\\\gcc\\\\avr\\\\5.4.0\\\\include"
             ],
             "forcedInclude": [
-                "C:\\\\arduino\\\\arduino-1.8.9\\\\hardware\\\\arduino\\\\avr\\\\cores\\\\arduino\\\\Arduino.h"
+                "C:\\arduino\\arduino-1.8.9\\hardware\\arduino\\avr\\cores\\arduino\\Arduino.h"
             ],
             "intelliSenseMode": "msvc-x64"
         }

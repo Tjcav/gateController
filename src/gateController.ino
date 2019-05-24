@@ -1,8 +1,19 @@
-enum GateState {opened, closed, transitioning, inop};
-enum GateMode {open, close, opening, closing, stopped};
+//gate states
+#define OPENED 0
+#define CLOSED 1
+#define TRANSITIONING 2
+#define INOP 3
+
+//gate controller mode
+#define OPEN 0
+#define CLOSE 1
+#define OPENING 2
+#define CLOSING 3
+#define STOPPED 4
 
 //the controller's mode
-GateMode gateMode = stopped;
+int gateMode = STOPPED;
+int gateState;
 
 #define OPEN_CONTACT 00
 #define CLOSE_CONTACT 01
@@ -13,25 +24,25 @@ void setup() {
   pinMode(CLOSE_CONTACT, INPUT);
 
   //find out what the gate state is
-  GateState gateState = updateGateState();
+  updateGateState();
   //set the initial gate mode
   switch (gateState) {
-    case opened:
+    case OPENED:
     {
-      gateMode = open;
+      gateMode = OPEN;
       break;
     }
-    case closed:
+    case CLOSED:
     {
-      gateMode = close;
+      gateMode = CLOSE;
       break;
     }
-    case transitioning:
+    case TRANSITIONING:
     {
       //todo: this is an error, should not occur
       break;
     }
-    case inop:
+    case INOP:
     {
       //todo: handle this condition. this means a faulty sensor reading
       break;
@@ -50,19 +61,17 @@ void loop() {
 
 }
 
-GateState updateGateState() {
+void updateGateState() {
   //determine current gate state
-  GateState gateState;
   boolean openContact = digitalRead(OPEN_CONTACT);
   boolean closeContact = digitalRead(CLOSE_CONTACT);
   if (openContact && closeContact) {
-      gateState = inop;
+      gateState = INOP;
   } else if (openContact) {
-      gateState = opened;
+      gateState = OPENED;
   } else if (closeContact) {
-      gateState = closed;
+      gateState = CLOSED;
   } else {
-      gateState = transitioning;
+      gateState = TRANSITIONING;
   }
-  return gateState;
 }
