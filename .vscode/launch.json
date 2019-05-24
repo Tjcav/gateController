@@ -5,6 +5,17 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Arduino Simulation",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "C:\\Program Files (x86)\\Virtronics\\Simulator for Arduino\\SimulatorForArduino.exe",
+            "args": ["${workspaceFolder}\\src\\gateController.ino"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": true
+        },
+        {
             "name": "Arduino",
             "type": "arduino",
             "request": "launch",
