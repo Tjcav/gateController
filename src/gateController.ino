@@ -1,20 +1,19 @@
-//gate states
+//gate positions
 #define OPENED 0
 #define CLOSED 1
 #define TRANSITIONING 2
-#define INOP 3
+#define UNKNOWN 3
+int gatePosition = UNKNOWN;
 
-//gate controller mode
+//gate controller modes
 #define OPEN 0
 #define CLOSE 1
 #define OPENING 2
 #define CLOSING 3
 #define STOPPED 4
-
-//the controller's mode
 int gateMode = STOPPED;
-int gateState;
 
+//define controller i/o pins
 #define EMERGENCY_STOP 2
 #define OPEN_CONTACT 3
 #define CLOSE_CONTACT 4
@@ -26,14 +25,14 @@ int gateState;
 #define MOTOR_OPEN 10
 #define MOTOR_CLOSE 11
 
-//debug pinouts
+//debug pinouts ******************** DEBUG *************
 #define MODE_OPEN_DEBUG 0
 #define MODE_CLOSE_DEBUG 1
 #define MODE_TRANSITIONING_DEBUG 12
 
 
 void setup() {
-//setup the pin modes
+  //setup the controller i/o pin modes
   pinMode(EMERGENCY_STOP, INPUT_PULLUP);
   pinMode(OPEN_CONTACT, INPUT_PULLUP);
   pinMode(CLOSE_CONTACT, INPUT_PULLUP);
@@ -45,19 +44,19 @@ void setup() {
   pinMode(MOTOR_OPEN, OUTPUT);
   pinMode(MOTOR_CLOSE, OUTPUT);
 
-  //setup debug pinouts
+  //setup debug pinouts ******************** DEBUG *************
   pinMode(MODE_OPEN_DEBUG, OUTPUT);
   pinMode(MODE_CLOSE_DEBUG, OUTPUT);
   pinMode(MODE_TRANSITIONING_DEBUG, OUTPUT);
 
-  
   //beep once to signal program start initialize
   tone(BUZZER, 1000, 100);
 
-  //find out what the gate state is
-  updateGateState();
-  //set the initial gate mode
-  switch (gateState) {
+  //find out what the current gate position is
+  updateGatePosition();
+
+  //set the initial gate controller mode
+  switch (gatePosition) {
     case OPENED:
     {
       gateMode = OPEN;
@@ -73,9 +72,10 @@ void setup() {
       gateMode = STOPPED;
       break;
     }
-    case INOP:
+    case UNKNOWN:
     {
       //todo: handle this condition. this means a faulty sensor reading
+      gateMode = STOPPED;
       break;
     }
     default:
@@ -90,10 +90,8 @@ void setup() {
 }
 
 void loop() {
-
-
-  //update the gateState
-  updateGateState();
+  //update the gatePosition
+  updateGatePosition();
   //todo: put button reading in another routine
   boolean emergencyStopRqst = !digitalRead(EMERGENCY_STOP);
   boolean gateModeChangeRqst = !digitalRead(OPEN_CLOSE_BTN) || !digitalRead(OPEN_CLOSE_FOB) || !digitalRead(OPEN_CLOSE_ZWAVE);
@@ -169,21 +167,21 @@ void loop() {
 }
 
 //determine current gate state
-void updateGateState() {
+void updateGatePosition() {
   boolean openContact = !digitalRead(OPEN_CONTACT);
   boolean closeContact = !digitalRead(CLOSE_CONTACT);
   if (openContact && closeContact) {
-      gateState = INOP;
+      gatePosition = UNKNOWN;
       digitalWrite(MODE_OPEN_DEBUG, HIGH);
       digitalWrite(MODE_CLOSE_DEBUG, HIGH);
       digitalWrite(MODE_TRANSITIONING_DEBUG, HIGH);
   } else if (openContact) {
-      gateState = OPENED;
+      gatePosition = OPENED;
       digitalWrite(MODE_OPEN_DEBUG, HIGH);
       digitalWrite(MODE_CLOSE_DEBUG, LOW);
       digitalWrite(MODE_TRANSITIONING_DEBUG, LOW);
   } else if (closeContact) {
-      gateState = CLOSED;
+      gatePosition = CLOSED;
       digitalWrite(MODE_OPEN_DEBUG, LOW);
       digitalWrite(MODE_CLOSE_DEBUG, HIGH);
       digitalWrite(MODE_TRANSITIONING_DEBUG, LOW);
@@ -191,7 +189,7 @@ void updateGateState() {
       digitalWrite(MODE_OPEN_DEBUG, LOW);
       digitalWrite(MODE_CLOSE_DEBUG, LOW);
       digitalWrite(MODE_TRANSITIONING_DEBUG, HIGH);
-      gateState = TRANSITIONING;
+      gatePosition = TRANSITIONING;
   }
 }
 
