@@ -18,17 +18,18 @@ int gateMode = STOPPED;
 #define OPEN_CONTACT 3
 #define CLOSE_CONTACT 4
 #define OPEN_CLOSE_BTN 5
-#define OPEN_CLOSE_FOB 6
-#define OPEN_CLOSE_ZWAVE 7
-#define OBSTACLE_DETECTED 8
-#define BUZZER 9
-#define MOTOR_OPEN 10
-#define MOTOR_CLOSE 11
+#define OPEN_FOB 5 //should be 6 changed for debug
+#define CLOSE_FOB 7
+#define OPEN_CLOSE_ZWAVE 8
+#define OBSTACLE_DETECTED 9
+#define BUZZER 10
+#define MOTOR_OPEN 11
+#define MOTOR_CLOSE 12
 
 //debug pinouts ******************** DEBUG *************
 #define MODE_OPEN_DEBUG 0
 #define MODE_CLOSE_DEBUG 1
-#define MODE_TRANSITIONING_DEBUG 12
+#define MODE_TRANSITIONING_DEBUG 6
 
 
 void setup() {
@@ -37,7 +38,8 @@ void setup() {
   pinMode(OPEN_CONTACT, INPUT_PULLUP);
   pinMode(CLOSE_CONTACT, INPUT_PULLUP);
   pinMode(OPEN_CLOSE_BTN, INPUT_PULLUP);
-  pinMode(OPEN_CLOSE_FOB, INPUT_PULLUP);
+  pinMode(OPEN_FOB, INPUT_PULLUP);
+  pinMode(CLOSE_FOB, INPUT_PULLUP);
   pinMode(OPEN_CLOSE_ZWAVE, INPUT_PULLUP);
   pinMode(OBSTACLE_DETECTED, INPUT_PULLUP);
   pinMode(BUZZER, OUTPUT);
@@ -56,34 +58,16 @@ void setup() {
   updateGatePosition();
 
   //set the initial gate controller mode
-  switch (gatePosition) {
-    case OPENED:
-    {
-      gateMode = OPEN;
-      break;
-    }
-    case CLOSED:
-    {
-      gateMode = CLOSE;
-      break;
-    }
-    case TRANSITIONING:
-    {
-      gateMode = STOPPED;
-      break;
-    }
-    case UNKNOWN:
-    {
-      //todo: handle this condition. this means a faulty sensor reading
-      gateMode = STOPPED;
-      break;
-    }
-    default:
-    {
-      //todo: should never get here
-      break;
-    }
-  };
+  if (gatePosition == OPENED) {
+    gateMode = OPEN;
+  } else if (gateMode == CLOSED) {
+    gateMode = CLOSE;
+  } else if (gatePosition == TRANSITIONING) {
+    gateMode = STOPPED;
+  } else {
+    //todo: if gatePosition is unknown what should happen?
+    gateMode = STOPPED;
+  }
 
   //beep once to signal program done initializing
   tone(BUZZER, 1000, 500);
@@ -92,11 +76,16 @@ void setup() {
 void loop() {
   //update the gatePosition
   updateGatePosition();
-  //todo: put button reading in another routine
-  boolean emergencyStopRqst = !digitalRead(EMERGENCY_STOP);
-  boolean gateModeChangeRqst = !digitalRead(OPEN_CLOSE_BTN) || !digitalRead(OPEN_CLOSE_FOB) || !digitalRead(OPEN_CLOSE_ZWAVE);
-  boolean openContact = !digitalRead(OPEN_CONTACT);
-  boolean closeContact = !digitalRead(CLOSE_CONTACT);
+
+  //check for user inputs
+  boolean buttonPressed = monitorButtonPress();
+  boolean zWaveRequest = monitorZWave();
+  boolean keyFobOpenRequest = monitorKeyFobOpen();
+  boolean keyFobCloseRequest = monitorKeyFobClose();
+  boolean estopCommand = monitorEstop(); //todo: should this use an interrupt?
+
+  //check sensors
+  boolean objectDetected = monitorObjectDetector(); //todo: should this use an interrupt?
 
   //run state machine
   switch (gateMode) {
@@ -105,8 +94,12 @@ void loop() {
       //do mode operations
       stopGate();
       //handle mode transitions
-      if (gateModeChangeRqst) {
+      if (buttonPressed || zWaveRequest || keyFobCloseRequest) {
         gateMode = CLOSING;
+      }
+      //handle an uncommanded position change
+      if (gatePosition == CLOSED) {
+        gateMode = CLOSE;
       }
       break;
     }
@@ -115,8 +108,12 @@ void loop() {
       //do mode operations
       stopGate();
       //handle mode transitions
-      if (gateModeChangeRqst) {
+      if (buttonPressed || zWaveRequest || keyFobOpenRequest) {
         gateMode = OPENING;
+      }
+      //handle an uncommanded position change
+      if (gatePosition == OPENED) {
+        gateMode = OPEN;
       }
       break;
     }
@@ -125,10 +122,10 @@ void loop() {
       //do mode operations
       openGate();
       //handle mode transitions
-      if (gateModeChangeRqst || emergencyStopRqst) {
+      if (buttonPressed || zWaveRequest || keyFobCloseRequest || keyFobOpenRequest || estopCommand || objectDetected) {
         gateMode = STOPPED;
       }
-      if (openContact) {
+      if (gatePosition == OPEN) {
         gateMode = OPEN;
       }
       break;
@@ -138,10 +135,10 @@ void loop() {
       //do mode operations
       closeGate();
       //handle mode transitions
-      if (gateModeChangeRqst || emergencyStopRqst) {
+      if (buttonPressed || zWaveRequest || keyFobCloseRequest || keyFobOpenRequest || estopCommand || objectDetected) {
         gateMode = STOPPED;
       }
-      if (closeContact) {
+      if (gatePosition == CLOSE) {
         gateMode = CLOSE;
       }
       break;
@@ -151,8 +148,17 @@ void loop() {
       //do mode operations
       stopGate();
       //handle mode transitions
-      if (gateModeChangeRqst) {
+      if (buttonPressed || zWaveRequest || keyFobOpenRequest) {
         gateMode = OPENING;
+      } else if (keyFobCloseRequest) {
+        gateMode = CLOSING;
+      }
+      //handle an uncommanded position change
+      if (gatePosition == CLOSED) {
+        gateMode = CLOSE;
+      }
+      if (gatePosition == OPENED) {
+        gateMode = OPEN;
       }
       break;
     }
@@ -164,6 +170,67 @@ void loop() {
     }
   };
 
+}
+
+boolean monitorButtonPress() {
+  boolean buttonPressed = false;
+  //check for press and depress
+  while (!digitalRead(OPEN_CLOSE_BTN)) {
+    buttonPressed = true;
+    //todo: this assumes there is always a depress....
+    digitalWrite(BUZZER, HIGH);
+    delay(10);
+  }
+  digitalWrite(BUZZER, LOW);
+  return buttonPressed;
+}
+
+boolean monitorZWave() {
+  boolean zWaveSignalRcvd = false;
+  //check for press and depress
+  while (!digitalRead(OPEN_CLOSE_ZWAVE)) {
+    zWaveSignalRcvd = true;
+    //todo: this assumes there is always a depress....
+    digitalWrite(BUZZER, HIGH);
+    delay(10);
+  }
+  digitalWrite(BUZZER, LOW);
+  return zWaveSignalRcvd;
+}
+
+boolean monitorKeyFobOpen() {
+  //todo: i think the fob module can be configured to send a pulse. should probably do that
+  boolean buttonPressed = false;
+  //check for press and depress
+  while (!digitalRead(OPEN_FOB)) {
+    buttonPressed = true;
+    //todo: this assumes there is always a depress....
+    digitalWrite(BUZZER, HIGH);
+    delay(10);
+  }
+  digitalWrite(BUZZER, LOW);
+  return buttonPressed;
+}
+
+boolean monitorKeyFobClose() {
+  boolean buttonPressed = false;
+  //check for press and depress
+  while (!digitalRead(CLOSE_FOB)) {
+    buttonPressed = true;
+    //todo: this assumes there is always a depress....
+    digitalWrite(BUZZER, HIGH);
+    delay(10);
+  }
+  digitalWrite(BUZZER, LOW);
+  return buttonPressed;
+}
+
+boolean monitorObjectDetector() {
+  return !digitalRead(OBSTACLE_DETECTED);
+}
+
+boolean monitorEstop() {
+  return !digitalRead(EMERGENCY_STOP);
 }
 
 //determine current gate state
