@@ -1186,6 +1186,148 @@ MOTOR</description>
 </deviceset>
 </devicesets>
 </library>
+<library name="Wurth_Elektronik_Electromechanic_Fuse_Holder_Connectors_rev16c" urn="urn:adsk.eagle:library:488577">
+<description>&lt;BR&gt;Wurth Elektronik - Fuse holders&lt;br&gt;&lt;Hr&gt;
+&lt;BR&gt;&lt;BR&gt; 
+&lt;TABLE BORDER=0 CELLSPACING=0 CELLPADDING=0&gt;
+&lt;TR&gt;   
+&lt;TD BGCOLOR="#cccccc" ALIGN=CENTER&gt;&lt;FONT FACE=ARIAL SIZE=3&gt;&lt;BR&gt;&lt;br&gt;
+      &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp; &amp;nbsp;&lt;BR&gt;
+       &lt;BR&gt;
+       &lt;BR&gt;
+       &lt;BR&gt;&lt;BR&gt;&lt;/FONT&gt;
+    &lt;/TD&gt;
+&lt;TD BGCOLOR="#cccccc" ALIGN=CENTER&gt;&lt;FONT FACE=ARIAL SIZE=3&gt;&lt;br&gt;
+      -----&lt;BR&gt;
+      -----&lt;BR&gt;
+      -----&lt;BR&gt;
+      -----&lt;BR&gt;
+      -----&lt;BR&gt;&lt;BR&gt;&lt;/FONT&gt;
+    &lt;/TD&gt;
+    &lt;TD BGCOLOR="#cccccc" ALIGN=CENTER&gt; &lt;FONT FACE=ARIAL SIZE=3&gt;&lt;br&gt;
+      ---------------------------&lt;BR&gt;
+&lt;B&gt;&lt;I&gt;&lt;span style='font-size:26pt;
+  color:#FF6600;'&gt;WE &lt;/span&gt;&lt;/i&gt;&lt;/b&gt;
+&lt;BR&gt;
+      ---------------------------&lt;BR&gt;&lt;b&gt;Würth Elektronik&lt;/b&gt;&lt;/FONT&gt;
+    &lt;/TD&gt;
+    &lt;TD BGCOLOR="#cccccc" ALIGN=CENTER&gt;&lt;FONT FACE=ARIAL SIZE=3&gt;&lt;br&gt;
+      ---------O---&lt;BR&gt;
+      ----O--------&lt;BR&gt;
+      ---------O---&lt;BR&gt;
+      ----O--------&lt;BR&gt;
+      ---------O---&lt;BR&gt;&lt;BR&gt;&lt;/FONT&gt;
+    &lt;/TD&gt;
+   
+&lt;TD BGCOLOR="#cccccc" ALIGN=CENTER&gt;&lt;FONT FACE=ARIAL SIZE=3&gt;&lt;BR&gt;
+      &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp; &amp;nbsp;&lt;BR&gt;
+       &lt;BR&gt;
+       &lt;BR&gt;
+       &lt;BR&gt;
+       &lt;BR&gt;&lt;BR&gt;&lt;/FONT&gt;
+    &lt;/TD&gt;
+  &lt;/TR&gt;
+
+  &lt;TR&gt;
+    &lt;TD COLSPAN=7&gt;&amp;nbsp;
+    &lt;/TD&gt;
+  &lt;/TR&gt;
+  
+&lt;/TABLE&gt;
+&lt;B&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;More than you expect&lt;BR&gt;&lt;BR&gt;&lt;BR&gt;&lt;/B&gt;
+
+&lt;HR&gt;&lt;BR&gt;
+&lt;b&gt;Würth Elektronik eiSos GmbH &amp; Co. KG&lt;/b&gt;&lt;br&gt;
+EMC &amp; Inductive Solutions&lt;br&gt;
+
+Max-Eyth-Str.1&lt;br&gt;
+D-74638 Waldenburg&lt;br&gt;
+&lt;br&gt;
+Tel: +49 (0)7942-945-0&lt;br&gt;
+Fax:+49 (0)7942-945-405&lt;br&gt;
+&lt;br&gt;
+&lt;a href="http://www.we-online.com/web/en/electronic_components/produkte_pb/bauteilebibliotheken/eagle_4.php"&gt;www.we-online.com/eagle &lt;/a&gt;&lt;br&gt;
+&lt;a href="mailto:libraries@we-online.com"&gt;libraries@we-online.com&lt;/a&gt; &lt;BR&gt;&lt;BR&gt;
+&lt;br&gt;&lt;HR&gt;&lt;BR&gt;
+Neither Autodesk norWürth Elektronik eiSos does warrant that this library is error-free or &lt;br&gt;
+that it meets your specific requirements.&lt;br&gt;&lt;BR&gt;
+Please contact us for more information.&lt;br&gt;&lt;BR&gt;&lt;br&gt;
+&lt;hr&gt;
+Eagle Version 6, Library Revision 2016c,2016-09-30&lt;br&gt;
+&lt;HR&gt;
+Copyright: Würth Elektronik</description>
+<packages>
+<package name="696106003002" urn="urn:adsk.eagle:footprint:488581/1" library_version="1">
+<description>WR-FSH PTF/76 FUSEHOLDER BLOCKS - PCB - CLIP COVER - THT</description>
+<pad name="1" x="-7.5" y="0" drill="1.5"/>
+<pad name="2" x="7.5" y="0" drill="1.5"/>
+<wire x1="-12.2" y1="-4.7" x2="-12.2" y2="4.7" width="0.127" layer="21"/>
+<wire x1="-12.2" y1="4.7" x2="12.2" y2="4.7" width="0.127" layer="21"/>
+<wire x1="12.2" y1="4.7" x2="12.2" y2="-4.7" width="0.127" layer="21"/>
+<wire x1="12.2" y1="-4.7" x2="-12.2" y2="-4.7" width="0.127" layer="21"/>
+<wire x1="-12.45" y1="-4.95" x2="-12.45" y2="4.95" width="0.127" layer="39"/>
+<wire x1="-12.45" y1="4.95" x2="12.45" y2="4.95" width="0.127" layer="39"/>
+<wire x1="12.45" y1="4.95" x2="12.45" y2="-4.95" width="0.127" layer="39"/>
+<wire x1="12.45" y1="-4.95" x2="-12.45" y2="-4.95" width="0.127" layer="39"/>
+<text x="-3.25" y="-6.478" size="1.27" layer="27">&gt;VALUE</text>
+<text x="-2.25" y="5.708" size="1.27" layer="25">&gt;NAME</text>
+</package>
+</packages>
+<packages3d>
+<package3d name="696106003002" urn="urn:adsk.eagle:package:488595/1" type="box" library_version="1">
+<description>WR-FSH PTF/76 FUSEHOLDER BLOCKS - PCB - CLIP COVER - THT</description>
+<packageinstances>
+<packageinstance name="696106003002"/>
+</packageinstances>
+</package3d>
+</packages3d>
+<symbols>
+<symbol name="FUSE" urn="urn:adsk.eagle:symbol:488578/1" library_version="1">
+<pin name="1" x="-5.08" y="0" visible="pad" length="short" direction="pas" swaplevel="1"/>
+<pin name="2" x="5.08" y="0" visible="pad" length="short" direction="pas" swaplevel="1" rot="R180"/>
+<text x="-5.08" y="4.27" size="1.778" layer="95">&gt;NAME</text>
+<text x="-5.08" y="-6.35" size="1.778" layer="96">&gt;VALUE</text>
+<wire x1="-2.54" y1="-1.27" x2="-1.905" y2="-1.27" width="0.254" layer="94"/>
+<wire x1="2.54" y1="1.27" x2="1.905" y2="1.27" width="0.254" layer="94"/>
+<wire x1="-2.54" y1="1.27" x2="-2.54" y2="-1.27" width="0.254" layer="94"/>
+<wire x1="2.54" y1="-1.27" x2="2.54" y2="1.27" width="0.254" layer="94"/>
+<wire x1="-1.905" y1="1.27" x2="-1.905" y2="-1.27" width="0.254" layer="94"/>
+<wire x1="-1.905" y1="1.27" x2="-2.54" y2="1.27" width="0.254" layer="94"/>
+<wire x1="-1.905" y1="-1.27" x2="1.905" y2="-1.27" width="0.254" layer="94"/>
+<wire x1="1.905" y1="1.27" x2="1.905" y2="-1.27" width="0.254" layer="94"/>
+<wire x1="1.905" y1="1.27" x2="-1.905" y2="1.27" width="0.254" layer="94"/>
+<wire x1="1.905" y1="-1.27" x2="2.54" y2="-1.27" width="0.254" layer="94"/>
+</symbol>
+</symbols>
+<devicesets>
+<deviceset name="696106003002" urn="urn:adsk.eagle:component:488607/1" prefix="J" uservalue="yes" library_version="1">
+<description>&lt;b&gt;WR-FSH PTF/76 FUSEHOLDER BLOCKS - PCB - CLIP COVER - THT
+;&lt;/b&gt;=&gt;Code : Con_FSH_Blocks_696106003002_696106003002
+&lt;p&gt;&lt;a href="http://katalog.we-online.de/media/images/eican/Con_FSH_Blocks_696106003002_pf2.jpg"&gt;
+&lt;img src="http://katalog.we-online.de/media/thumbs2/eican/thb_Con_FSH_Blocks_696106003002_pf2.jpg" width="320"&gt;&lt;/a&gt;&lt;p&gt;
+Details see: &lt;a href="http://katalog.we-online.de/em/datasheet/696106003002.pdf"&gt;http://katalog.we-online.de/em/datasheet/696106003002.pdf&lt;/a&gt;&lt;p&gt;
+Created 2014-10-08, Karrer Zheng&lt;br&gt;
+2014 (C) Wurth Elektronik</description>
+<gates>
+<gate name="G$1" symbol="FUSE" x="0" y="0"/>
+</gates>
+<devices>
+<device name="" package="696106003002">
+<connects>
+<connect gate="G$1" pin="1" pad="1"/>
+<connect gate="G$1" pin="2" pad="2"/>
+</connects>
+<package3dinstances>
+<package3dinstance package3d_urn="urn:adsk.eagle:package:488595/1"/>
+</package3dinstances>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+</devices>
+</deviceset>
+</devicesets>
+</library>
 </libraries>
 <attributes>
 </attributes>
@@ -1214,10 +1356,13 @@ MOTOR</description>
 <part name="M1" library="SparkFun-Electromechanical" library_urn="urn:adsk.eagle:library:516" deviceset="MOTOR" device="10MM" package3d_urn="urn:adsk.eagle:package:38555/1"/>
 <part name="GND4" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GNDA" device=""/>
 <part name="P+2" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="+24V" device=""/>
+<part name="FUSE" library="Wurth_Elektronik_Electromechanic_Fuse_Holder_Connectors_rev16c" library_urn="urn:adsk.eagle:library:488577" deviceset="696106003002" device="" package3d_urn="urn:adsk.eagle:package:488595/1"/>
 </parts>
 <sheets>
 <sheet>
 <plain>
+<text x="127" y="157.48" size="1.778" layer="91">Motor Forward</text>
+<text x="127" y="137.16" size="1.778" layer="91">Motor Reverse</text>
 </plain>
 <instances>
 <instance part="ARDUINO_NANO1" gate="G$1" x="55.88" y="53.34" smashed="yes" rot="R180">
@@ -1283,8 +1428,12 @@ MOTOR</description>
 <instance part="GND4" gate="1" x="167.64" y="111.76" smashed="yes">
 <attribute name="VALUE" x="165.1" y="109.22" size="1.778" layer="96" rot="R90"/>
 </instance>
-<instance part="P+2" gate="1" x="172.72" y="167.64" smashed="yes">
-<attribute name="VALUE" x="170.18" y="162.56" size="1.778" layer="96" rot="R90"/>
+<instance part="P+2" gate="1" x="172.72" y="172.72" smashed="yes">
+<attribute name="VALUE" x="170.18" y="167.64" size="1.778" layer="96" rot="R90"/>
+</instance>
+<instance part="FUSE" gate="G$1" x="172.72" y="160.02" smashed="yes" rot="R270">
+<attribute name="NAME" x="176.99" y="165.1" size="1.778" layer="95" rot="R270"/>
+<attribute name="VALUE" x="166.37" y="165.1" size="1.778" layer="96" rot="R270"/>
 </instance>
 </instances>
 <busses>
@@ -1493,13 +1642,20 @@ MOTOR</description>
 <net name="+24V" class="0">
 <segment>
 <pinref part="P+2" gate="1" pin="+24V"/>
+<wire x1="172.72" y1="170.18" x2="172.72" y2="165.1" width="0.1524" layer="91"/>
+<pinref part="FUSE" gate="G$1" pin="1"/>
+</segment>
+</net>
+<net name="N$15" class="0">
+<segment>
 <pinref part="K2" gate="K$1" pin="NO"/>
-<wire x1="172.72" y1="165.1" x2="172.72" y2="147.32" width="0.1524" layer="91"/>
 <wire x1="172.72" y1="147.32" x2="162.56" y2="147.32" width="0.1524" layer="91"/>
 <pinref part="K1" gate="K$1" pin="NO"/>
 <wire x1="172.72" y1="147.32" x2="172.72" y2="127" width="0.1524" layer="91"/>
 <wire x1="172.72" y1="127" x2="162.56" y2="127" width="0.1524" layer="91"/>
 <junction x="172.72" y="147.32"/>
+<wire x1="172.72" y1="154.94" x2="172.72" y2="147.32" width="0.1524" layer="91"/>
+<pinref part="FUSE" gate="G$1" pin="2"/>
 </segment>
 </net>
 </nets>

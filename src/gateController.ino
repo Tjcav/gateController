@@ -5,13 +5,10 @@
 #define UNKNOWN 3
 int gatePosition = UNKNOWN;
 
-//gate controller modes
-#define OPEN 0
-#define CLOSE 1
-#define OPENING 2
-#define CLOSING 3
-#define STOPPED 4
-int gateMode = STOPPED;
+//define controller commands
+#define STOP_CMD 0
+#define OPEN_CMD 1
+#define CLOSE_CMD 2
 
 //define controller i/o pins
 #define EMERGENCY_STOP 2
@@ -31,11 +28,23 @@ int gateMode = STOPPED;
 #define MODE_CLOSE_DEBUG 1
 #define MODE_TRANSITIONING_DEBUG 6
 
+//io data
+volatile boolean buttonRequest;
+volatile boolean zWaveRequest;
+volatile boolean keyFobOpenRequest;
+volatile boolean keyFobCloseRequest;
+volatile boolean estopCommand;
+volatile boolean objectDetected;
+
 //save the state of buttons to detect traling edge
 boolean buttonPV = false;
 
 
 void setup() {
+  //beep once to signal program start initialize
+  pinMode(BUZZER, OUTPUT);
+  tone(BUZZER, 1000, 100);
+
   //setup the controller i/o pin modes
   pinMode(EMERGENCY_STOP, INPUT_PULLUP);
   pinMode(OPEN_CONTACT, INPUT_PULLUP);
@@ -45,7 +54,6 @@ void setup() {
   pinMode(CLOSE_FOB, INPUT_PULLUP);
   pinMode(OPEN_CLOSE_ZWAVE, INPUT_PULLUP);
   pinMode(OBSTACLE_DETECTED, INPUT_PULLUP);
-  pinMode(BUZZER, OUTPUT);
   pinMode(MOTOR_OPEN, OUTPUT);
   pinMode(MOTOR_CLOSE, OUTPUT);
 
@@ -54,163 +62,90 @@ void setup() {
   pinMode(MODE_CLOSE_DEBUG, OUTPUT);
   pinMode(MODE_TRANSITIONING_DEBUG, OUTPUT);
 
-  //beep once to signal program start initialize
-  tone(BUZZER, 1000, 100);
-
   //find out what the current gate position is
   updateGatePosition();
-
-  //set the initial gate controller mode
-  if (gatePosition == OPENED) {
-    gateMode = OPEN;
-  } else if (gateMode == CLOSED) {
-    gateMode = CLOSE;
-  } else if (gatePosition == TRANSITIONING) {
-    gateMode = STOPPED;
-  } else {
-    //todo: if gatePosition is unknown what should happen?
-    gateMode = STOPPED;
-  }
 
   //beep once to signal program done initializing
   tone(BUZZER, 1000, 500);
 }
 
 void loop() {
+  int currentCommand = STOP_CMD;
+
+  while (true) {
+    int newCommand = getCommands(currentCommand);
+
+    if (newCommand == STOP_CMD) {
+      stopGate();
+    } else if (newCommand == CLOSE_CMD) {
+      closeGate();
+    } else if (newCommand == OPEN_CMD) {
+      openGate();
+    } 
+  }
+}
+
+void stopGate() {
+  digitalWrite(MOTOR_OPEN, false);
+  digitalWrite(MOTOR_CLOSE, false);
+}
+
+void openGate() {
+  digitalWrite(MOTOR_OPEN, true);
+}
+
+void closeGate() {
+  digitalWrite(MOTOR_CLOSE, true);
+}
+
+int getCommands(int currentMode) {
   //update the gatePosition
   updateGatePosition();
 
-  //check for user inputs
-  boolean buttonPressed = monitorButtonPress();
-  boolean zWaveRequest = monitorZWave();
-  boolean keyFobOpenRequest = monitorKeyFobOpen();
-  boolean keyFobCloseRequest = monitorKeyFobClose();
-  boolean estopCommand = monitorEstop(); //todo: should this use an interrupt?
+  //check for estop or object detected
+  if (monitorEstop() || monitorObjectDetector()) {
+    return STOP_CMD;
+  }
 
-  //check sensors
-  boolean objectDetected = monitorObjectDetector(); //todo: should this use an interrupt?
-
-  //run state machine
-  switch (gateMode) {
-    case OPEN:
-    {
-      //do mode operations
-      stopGate();
-      //handle mode transitions
-      if (buttonPressed || zWaveRequest || keyFobCloseRequest && !estopCommand) {
-        gateMode = CLOSING;
+  switch(currentMode) {
+    case OPEN_CMD: 
+      if (monitorButton() || monitorZWave() || monitorKeyFobClose() || monitorKeyFobOpen()) {
+        return STOP_CMD;
       }
-      //handle an uncommanded position change
+      break;
+    case CLOSE_CMD: 
+      if (monitorButton() || monitorZWave() || monitorKeyFobClose() || monitorKeyFobOpen()) {
+        return STOP_CMD;
+      }
+      break;
+    case STOP_CMD:
       if (gatePosition == CLOSED) {
-        gateMode = CLOSE;
+        if (monitorButton() || monitorZWave() || monitorKeyFobOpen()) {
+          return OPEN_CMD;
+        }
+      } else if (gatePosition == OPENED) {
+        if (monitorButton() || monitorZWave() || monitorKeyFobClose()) {
+          return CLOSE_CMD;
+        } 
+      } else if (gatePosition == TRANSITIONING) {
+        if (monitorButton() || monitorZWave() || monitorKeyFobOpen()) {
+          return OPEN_CMD;
+        } else if (monitorKeyFobClose()) {
+          return CLOSE_CMD;
+        }
+      } else {
+        return STOP_CMD;
       }
       break;
-    }
-    case CLOSE:
-    {
-      //do mode operations
-      stopGate();
-      //handle mode transitions
-      if (buttonPressed || zWaveRequest || keyFobOpenRequest && !estopCommand) {
-        gateMode = OPENING;
-      }
-      //handle an uncommanded position change
-      if (gatePosition == OPENED) {
-        gateMode = OPEN;
-      }
-      break;
-    }
-    case OPENING:
-    {
-      //handle estop
-      if (estopCommand) {
-        estop();
-        gateMode = STOPPED;
-      }
-
-      //do mode operations
-      openGate();
-
-      //handle mode transitions
-      if (buttonPressed || zWaveRequest || keyFobCloseRequest || keyFobOpenRequest || objectDetected) {
-        gateMode = STOPPED;
-      }
-      if (gatePosition == OPEN) {
-        gateMode = OPEN;
-      }
-      break;
-    }
-    case CLOSING:
-    {
-      //handle estop
-      if (estopCommand) {
-        estop();
-        gateMode = STOPPED;
-      }
-
-      //do mode operations
-      closeGate();
-
-      //handle mode transitions
-      if (buttonPressed || zWaveRequest || keyFobCloseRequest || keyFobOpenRequest || estopCommand || objectDetected) {
-        gateMode = STOPPED;
-      }
-      if (gatePosition == CLOSE) {
-        gateMode = CLOSE;
-      }
-      break;
-    }
-    case STOPPED:
-    {
-      //do mode operations
-      stopGate();
-      //handle mode transitions
-      if (buttonPressed || zWaveRequest || keyFobOpenRequest && !estopCommand) {
-        gateMode = OPENING;
-      } else if (keyFobCloseRequest) {
-        gateMode = CLOSING;
-      }
-      //handle an uncommanded position change
-      if (gatePosition == CLOSED) {
-        gateMode = CLOSE;
-      }
-      if (gatePosition == OPENED) {
-        gateMode = OPEN;
-      }
-      break;
-    }
     default:
-    {
-      //todo: should never get here
-      stopGate();
+      return STOP_CMD;
       break;
-    }
-  };
-
+  }
+  return currentMode;
 }
 
-void estop() {
-  stopGate();
-  buttonPV = false;
-  tone(BUZZER, 200, 1000);
-}
-
-boolean monitorButtonPress() {
-  boolean buttonCommand = false;
-  boolean estop = !digitalRead(EMERGENCY_STOP);
-  boolean buttonPressed = !digitalRead(OPEN_CLOSE_BTN) && !estop;
-
-  if (buttonPressed) {
-        digitalWrite(BUZZER, HIGH);
-  }
-
-  if (!buttonPressed && buttonPV) {
-    buttonCommand = true;
-    digitalWrite(BUZZER, LOW);
-  }
-  buttonPV = buttonPressed;
-
-  return buttonCommand;
+boolean monitorButton() {
+  return false;
 }
 
 boolean monitorZWave() {
@@ -286,17 +221,4 @@ void updateGatePosition() {
       digitalWrite(MODE_TRANSITIONING_DEBUG, HIGH);
       gatePosition = TRANSITIONING;
   }
-}
-
-void openGate() {
-  digitalWrite(MOTOR_OPEN, true);
-}
-
-void closeGate() {
-  digitalWrite(MOTOR_CLOSE, true);
-}
-
-void stopGate() {
-  digitalWrite(MOTOR_OPEN, false);
-  digitalWrite(MOTOR_CLOSE, false);
 }
