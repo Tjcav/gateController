@@ -31,6 +31,9 @@ int gateMode = STOPPED;
 #define MODE_CLOSE_DEBUG 1
 #define MODE_TRANSITIONING_DEBUG 6
 
+//save the state of buttons to detect traling edge
+boolean buttonPV = false;
+
 
 void setup() {
   //setup the controller i/o pin modes
@@ -94,7 +97,7 @@ void loop() {
       //do mode operations
       stopGate();
       //handle mode transitions
-      if (buttonPressed || zWaveRequest || keyFobCloseRequest) {
+      if (buttonPressed || zWaveRequest || keyFobCloseRequest && !estopCommand) {
         gateMode = CLOSING;
       }
       //handle an uncommanded position change
@@ -108,7 +111,7 @@ void loop() {
       //do mode operations
       stopGate();
       //handle mode transitions
-      if (buttonPressed || zWaveRequest || keyFobOpenRequest) {
+      if (buttonPressed || zWaveRequest || keyFobOpenRequest && !estopCommand) {
         gateMode = OPENING;
       }
       //handle an uncommanded position change
@@ -119,10 +122,17 @@ void loop() {
     }
     case OPENING:
     {
+      //handle estop
+      if (estopCommand) {
+        estop();
+        gateMode = STOPPED;
+      }
+
       //do mode operations
       openGate();
+
       //handle mode transitions
-      if (buttonPressed || zWaveRequest || keyFobCloseRequest || keyFobOpenRequest || estopCommand || objectDetected) {
+      if (buttonPressed || zWaveRequest || keyFobCloseRequest || keyFobOpenRequest || objectDetected) {
         gateMode = STOPPED;
       }
       if (gatePosition == OPEN) {
@@ -132,8 +142,15 @@ void loop() {
     }
     case CLOSING:
     {
+      //handle estop
+      if (estopCommand) {
+        estop();
+        gateMode = STOPPED;
+      }
+
       //do mode operations
       closeGate();
+
       //handle mode transitions
       if (buttonPressed || zWaveRequest || keyFobCloseRequest || keyFobOpenRequest || estopCommand || objectDetected) {
         gateMode = STOPPED;
@@ -148,7 +165,7 @@ void loop() {
       //do mode operations
       stopGate();
       //handle mode transitions
-      if (buttonPressed || zWaveRequest || keyFobOpenRequest) {
+      if (buttonPressed || zWaveRequest || keyFobOpenRequest && !estopCommand) {
         gateMode = OPENING;
       } else if (keyFobCloseRequest) {
         gateMode = CLOSING;
@@ -172,17 +189,28 @@ void loop() {
 
 }
 
+void estop() {
+  stopGate();
+  buttonPV = false;
+  tone(BUZZER, 200, 1000);
+}
+
 boolean monitorButtonPress() {
-  boolean buttonPressed = false;
-  //check for press and depress
-  while (!digitalRead(OPEN_CLOSE_BTN)) {
-    buttonPressed = true;
-    //todo: this assumes there is always a depress....
-    digitalWrite(BUZZER, HIGH);
-    delay(10);
+  boolean buttonCommand = false;
+  boolean estop = !digitalRead(EMERGENCY_STOP);
+  boolean buttonPressed = !digitalRead(OPEN_CLOSE_BTN) && !estop;
+
+  if (buttonPressed) {
+        digitalWrite(BUZZER, HIGH);
   }
-  digitalWrite(BUZZER, LOW);
-  return buttonPressed;
+
+  if (!buttonPressed && buttonPV) {
+    buttonCommand = true;
+    digitalWrite(BUZZER, LOW);
+  }
+  buttonPV = buttonPressed;
+
+  return buttonCommand;
 }
 
 boolean monitorZWave() {
