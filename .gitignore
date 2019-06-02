@@ -30,10 +30,9 @@
 *.exe
 *.out
 *.app
+
+# Random FIles
 .vscode/ipch/*
-doc/gate_schematic.s#2
-doc/gateCustomPartLibrary.l#3
-doc/gateCustomPartLibrary.l#2
-doc/gateCustomPartLibrary.l#1
-Trace 2019-05-24.txt
-doc/gate_schematic.s#1
+Trace*.txt
+doc/*.s#*
+doc/*.l#*

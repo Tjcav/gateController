@@ -15,29 +15,44 @@
 int gateMode = STOPPED;
 int gateState;
 
-#define EMERGENCY_STOP 0
-#define OPEN_CONTACT 1
-#define CLOSE_CONTACT 2
-#define OPEN_CLOSE_BTN 3
-#define OPEN_CLOSE_FOB 4
-#define OPEN_CLOSE_ZWAVE 5
-#define OBSTACLE_DETECTED 6
-#define MOTOR_CLOSE 7
-#define MOTOR_OPEN 8
+#define EMERGENCY_STOP 2
+#define OPEN_CONTACT 3
+#define CLOSE_CONTACT 4
+#define OPEN_CLOSE_BTN 5
+#define OPEN_CLOSE_FOB 6
+#define OPEN_CLOSE_ZWAVE 7
+#define OBSTACLE_DETECTED 8
 #define BUZZER 9
+#define MOTOR_OPEN 10
+#define MOTOR_CLOSE 11
+
+//debug pinouts
+#define MODE_OPEN_DEBUG 0
+#define MODE_CLOSE_DEBUG 1
+#define MODE_TRANSITIONING_DEBUG 12
+
 
 void setup() {
 //setup the pin modes
-  pinMode(OPEN_CONTACT, INPUT);
-  pinMode(CLOSE_CONTACT, INPUT);
-  pinMode(EMERGENCY_STOP, INPUT);
-  pinMode(OPEN_CLOSE_BTN, INPUT);
-  pinMode(OPEN_CLOSE_FOB, INPUT);
-  pinMode(OPEN_CLOSE_ZWAVE, INPUT);
-  pinMode(OBSTACLE_DETECTED, INPUT);
-  pinMode(MOTOR_CLOSE, OUTPUT);
+  pinMode(EMERGENCY_STOP, INPUT_PULLUP);
+  pinMode(OPEN_CONTACT, INPUT_PULLUP);
+  pinMode(CLOSE_CONTACT, INPUT_PULLUP);
+  pinMode(OPEN_CLOSE_BTN, INPUT_PULLUP);
+  pinMode(OPEN_CLOSE_FOB, INPUT_PULLUP);
+  pinMode(OPEN_CLOSE_ZWAVE, INPUT_PULLUP);
+  pinMode(OBSTACLE_DETECTED, INPUT_PULLUP);
+  pinMode(BUZZER, OUTPUT);
   pinMode(MOTOR_OPEN, OUTPUT);
+  pinMode(MOTOR_CLOSE, OUTPUT);
 
+  //setup debug pinouts
+  pinMode(MODE_OPEN_DEBUG, OUTPUT);
+  pinMode(MODE_CLOSE_DEBUG, OUTPUT);
+  pinMode(MODE_TRANSITIONING_DEBUG, OUTPUT);
+
+  
+  //beep once to signal program start initialize
+  tone(BUZZER, 1000, 100);
 
   //find out what the gate state is
   updateGateState();
@@ -55,7 +70,7 @@ void setup() {
     }
     case TRANSITIONING:
     {
-      //todo: this is an error, should not occur
+      gateMode = STOPPED;
       break;
     }
     case INOP:
@@ -70,16 +85,20 @@ void setup() {
     }
   };
 
+  //beep once to signal program done initializing
+  tone(BUZZER, 1000, 500);
 }
 
 void loop() {
+
+
   //update the gateState
   updateGateState();
   //todo: put button reading in another routine
-  boolean gateModeChangeRqst = digitalRead(OPEN_CLOSE_BTN) || digitalRead(OPEN_CLOSE_FOB) || digitalRead(OPEN_CLOSE_ZWAVE);
-  boolean emergencyStopRqst = digitalRead(EMERGENCY_STOP);
-  boolean openContact = digitalRead(OPEN_CONTACT);
-  boolean closeContact = digitalRead(CLOSE_CONTACT);
+  boolean emergencyStopRqst = !digitalRead(EMERGENCY_STOP);
+  boolean gateModeChangeRqst = !digitalRead(OPEN_CLOSE_BTN) || !digitalRead(OPEN_CLOSE_FOB) || !digitalRead(OPEN_CLOSE_ZWAVE);
+  boolean openContact = !digitalRead(OPEN_CONTACT);
+  boolean closeContact = !digitalRead(CLOSE_CONTACT);
 
   //run state machine
   switch (gateMode) {
@@ -106,7 +125,7 @@ void loop() {
     case OPENING:
     {
       //do mode operations
-      //openGate();
+      openGate();
       //handle mode transitions
       if (gateModeChangeRqst || emergencyStopRqst) {
         gateMode = STOPPED;
@@ -151,15 +170,27 @@ void loop() {
 
 //determine current gate state
 void updateGateState() {
-  boolean openContact = digitalRead(OPEN_CONTACT);
-  boolean closeContact = digitalRead(CLOSE_CONTACT);
+  boolean openContact = !digitalRead(OPEN_CONTACT);
+  boolean closeContact = !digitalRead(CLOSE_CONTACT);
   if (openContact && closeContact) {
       gateState = INOP;
+      digitalWrite(MODE_OPEN_DEBUG, HIGH);
+      digitalWrite(MODE_CLOSE_DEBUG, HIGH);
+      digitalWrite(MODE_TRANSITIONING_DEBUG, HIGH);
   } else if (openContact) {
       gateState = OPENED;
+      digitalWrite(MODE_OPEN_DEBUG, HIGH);
+      digitalWrite(MODE_CLOSE_DEBUG, LOW);
+      digitalWrite(MODE_TRANSITIONING_DEBUG, LOW);
   } else if (closeContact) {
       gateState = CLOSED;
+      digitalWrite(MODE_OPEN_DEBUG, LOW);
+      digitalWrite(MODE_CLOSE_DEBUG, HIGH);
+      digitalWrite(MODE_TRANSITIONING_DEBUG, LOW);
   } else {
+      digitalWrite(MODE_OPEN_DEBUG, LOW);
+      digitalWrite(MODE_CLOSE_DEBUG, LOW);
+      digitalWrite(MODE_TRANSITIONING_DEBUG, HIGH);
       gateState = TRANSITIONING;
   }
 }
