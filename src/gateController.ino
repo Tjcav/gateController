@@ -11,14 +11,14 @@ int gatePosition = UNKNOWN;
 #define CLOSE_CMD 2
 
 //define controller i/o pins
-#define EMERGENCY_STOP 2
-#define OPEN_CONTACT 3
-#define CLOSE_CONTACT 4
-#define OPEN_CLOSE_BTN 5
-#define OPEN_FOB 5 //should be 6 changed for debug
+#define EMERGENCY_STOP 2    //green
+#define OPEN_CONTACT 3      //orange
+#define CLOSE_CONTACT 4     //yellow
+#define OPEN_CLOSE_BTN 5    //blue
+#define OPEN_FOB 6
 #define CLOSE_FOB 7
-#define OPEN_CLOSE_ZWAVE 8
-#define OBSTACLE_DETECTED 9
+#define OPEN_CLOSE_ZWAVE 8  //purple
+#define OBSTACLE_DETECTED 9 //grey
 #define BUZZER 10
 #define MOTOR_OPEN 11
 #define MOTOR_CLOSE 12
@@ -26,7 +26,7 @@ int gatePosition = UNKNOWN;
 //debug pinouts ******************** DEBUG *************
 #define MODE_OPEN_DEBUG 0
 #define MODE_CLOSE_DEBUG 1
-#define MODE_TRANSITIONING_DEBUG 6
+#define MODE_TRANSITIONING_DEBUG 13
 
 //io data
 volatile boolean buttonRequest;
@@ -36,9 +36,13 @@ volatile boolean keyFobCloseRequest;
 volatile boolean estopCommand;
 volatile boolean objectDetected;
 
-//save the state of buttons to detect traling edge
-boolean buttonPV = false;
-
+//variables used to detect trailing edge and remove debounce
+int buttonState;             // the current reading from the input pin
+int lastButtonState = LOW;   // the previous reading from the input pin
+// the following variables are unsigned longs because the time, measured in
+// milliseconds, will quickly become a bigger number than can be stored in an int.
+unsigned long lastDebounceTime = 0;  // the last time the output pin was toggled
+unsigned long debounceDelay = 50;    // the debounce time; increase if the output flickers
 
 void setup() {
   //beep once to signal program start initialize
@@ -77,10 +81,13 @@ void loop() {
 
     if (newCommand == STOP_CMD) {
       stopGate();
+      currentCommand = STOP_CMD;
     } else if (newCommand == CLOSE_CMD) {
       closeGate();
+      currentCommand = CLOSE_CMD;
     } else if (newCommand == OPEN_CMD) {
       openGate();
+      currentCommand = OPEN_CMD;
     } 
   }
 }
@@ -109,12 +116,12 @@ int getCommands(int currentMode) {
 
   switch(currentMode) {
     case OPEN_CMD: 
-      if (monitorButton() || monitorZWave() || monitorKeyFobClose() || monitorKeyFobOpen()) {
+      if (monitorButton() || monitorZWave() || monitorKeyFobClose() || monitorKeyFobOpen() || gatePosition == OPENED) {
         return STOP_CMD;
       }
       break;
     case CLOSE_CMD: 
-      if (monitorButton() || monitorZWave() || monitorKeyFobClose() || monitorKeyFobOpen()) {
+      if (monitorButton() || monitorZWave() || monitorKeyFobClose() || monitorKeyFobOpen() || gatePosition == CLOSED) {
         return STOP_CMD;
       }
       break;
@@ -145,7 +152,33 @@ int getCommands(int currentMode) {
 }
 
 boolean monitorButton() {
-  return false;
+  boolean currentButtonReading = !digitalRead(OPEN_CLOSE_BTN);
+  boolean buttonCommand = LOW;
+
+  // If the switch changed, due to noise or pressing:
+  if (currentButtonReading != lastButtonState) {
+    // reset the debouncing timer
+    lastDebounceTime = millis();
+  }
+
+  if ((millis() - lastDebounceTime) > debounceDelay) {
+    // whatever the reading is at, it's been there for longer than the debounce
+    // delay, so take it as the actual current state:
+
+    // if the button state has changed:
+    if (currentButtonReading != buttonState) {
+      buttonState = currentButtonReading;
+
+      // only send the button command if the new button state is LOW
+      if (buttonState == LOW) {
+        buttonCommand = HIGH;
+      }
+    }
+  }
+  
+  // save the reading. Next time through the loop, it'll be the lastButtonState:
+  lastButtonState = currentButtonReading;
+  return buttonCommand;
 }
 
 boolean monitorZWave() {
@@ -198,8 +231,8 @@ boolean monitorEstop() {
 
 //determine current gate state
 void updateGatePosition() {
-  boolean openContact = !digitalRead(OPEN_CONTACT);
-  boolean closeContact = !digitalRead(CLOSE_CONTACT);
+  boolean openContact = digitalRead(OPEN_CONTACT);   //sensor is normally closed
+  boolean closeContact = digitalRead(CLOSE_CONTACT); //sensor is normally closed
   if (openContact && closeContact) {
       gatePosition = UNKNOWN;
       digitalWrite(MODE_OPEN_DEBUG, HIGH);
