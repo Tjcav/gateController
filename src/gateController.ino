@@ -186,11 +186,7 @@ boolean monitorZWave() {
   //check for press and depress
   while (!digitalRead(OPEN_CLOSE_ZWAVE)) {
     zWaveSignalRcvd = true;
-    //todo: this assumes there is always a depress....
-    digitalWrite(BUZZER, HIGH);
-    delay(10);
   }
-  digitalWrite(BUZZER, LOW);
   return zWaveSignalRcvd;
 }
 
@@ -200,11 +196,7 @@ boolean monitorKeyFobOpen() {
   //check for press and depress
   while (!digitalRead(OPEN_FOB)) {
     buttonPressed = true;
-    //todo: this assumes there is always a depress....
-    digitalWrite(BUZZER, HIGH);
-    delay(10);
   }
-  digitalWrite(BUZZER, LOW);
   return buttonPressed;
 }
 
@@ -213,11 +205,7 @@ boolean monitorKeyFobClose() {
   //check for press and depress
   while (!digitalRead(CLOSE_FOB)) {
     buttonPressed = true;
-    //todo: this assumes there is always a depress....
-    digitalWrite(BUZZER, HIGH);
-    delay(10);
   }
-  digitalWrite(BUZZER, LOW);
   return buttonPressed;
 }
 
